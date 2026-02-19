@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mfumo wa Fedha</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #21262d;
+    --gold: #f0c040;
+    --gold2: #e8a820;
+    --green: #3fb950;
+    --red: #f85149;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --radius: 14px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* Hero / Background Image */
+  .hero {
+    position: relative;
+    height: 260px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1400&q=80');
+    background-size: cover;
+    background-position: center;
+    transition: background-image 0.4s;
+    filter: brightness(0.45);
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(13,17,23,0.95) 0%, rgba(13,17,23,0.2) 60%, transparent 100%);
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 28px 32px;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .hero-title span { color: #fff; }
+  .hero-subtitle { font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-top: 6px; }
+
+  .change-bg-btn {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .change-bg-btn:hover { background: rgba(255,255,255,0.2); }
+
+  #bgFileInput { display: none; }
+
+  /* Sticky nav bar */
+  header {
+    background: rgba(13,17,23,0.92);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--text); }
+
+  .date-badge {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px;
+  }
+
+  /* Summary Cards */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .card.balance::before { background: linear-gradient(90deg, var(--gold), var(--gold2)); }
+  .card.income::before { background: var(--green); }
+  .card.expense::before { background: var(--red); }
+
+  .card-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .card-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .card.balance .card-amount { color: var(--gold); }
+  .card.income .card-amount { color: var(--green); }
+  .card.expense .card-amount { color: var(--red); }
+
+  .card-currency { font-size: 0.9rem; font-weight: 300; opacity: 0.7; margin-bottom: 4px; }
+
+  /* Form */
+  .form-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 28px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--gold);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.5px; }
+
+  input, select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus { border-color: var(--gold); }
+
+  select option { background: var(--bg); }
+
+  .type-toggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .type-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: var(--bg);
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+
+  .type-btn.active-income { background: rgba(63,185,80,0.15); color: var(--green); }
+  .type-btn.active-expense { background: rgba(248,81,73,0.15); color: var(--red); }
+
+  .btn-add {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #0d1117;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-add:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-add:active { transform: translateY(0); }
+
+  /* Transactions */
+  .transactions-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .transactions-header {
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .filter-tabs {
+    display: flex;
+    gap: 6px;
+  }
+
+  .filter-tab {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .filter-tab.active { background: var(--gold); color: #0d1117; font-weight: 600; }
+  .filter-tab:not(.active):hover { border-color: var(--border); color: var(--text); }
+
+  .transaction-list { padding: 8px 0; max-height: 400px; overflow-y: auto; }
+
+  .transaction-list::-webkit-scrollbar { width: 4px; }
+  .transaction-list::-webkit-scrollbar-track { background: transparent; }
+  .transaction-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .transaction-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 28px;
+    border-bottom: 1px solid rgba(33,38,45,0.5);
+    gap: 14px;
+    animation: slideIn 0.3s ease;
+    transition: background 0.15s;
+  }
+
+  .transaction-item:hover { background: rgba(255,255,255,0.02); }
+  .transaction-item:last-child { border-bottom: none; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .t-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .t-icon.income { background: rgba(63,185,80,0.15); }
+  .t-icon.expense { background: rgba(248,81,73,0.15); }
+
+  .t-info { flex: 1; min-width: 0; }
+  .t-name { font-weight: 500; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .t-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+  .t-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .t-amount.income { color: var(--green); }
+  .t-amount.expense { color: var(--red); }
+
+  .t-delete {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    opacity: 0;
+  }
+
+  .transaction-item:hover .t-delete { opacity: 1; }
+  .t-delete:hover { background: rgba(248,81,73,0.15); color: var(--red); }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--muted);
+  }
+
+  .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.5; }
+  .empty-text { font-size: 0.9rem; }
+
+  /* Progress bar */
+  .progress-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--red), #ff6b6b);
+    transition: width 0.5s ease;
+  }
+
+  @media (max-width: 600px) {
+    .summary { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    header { padding: 16px; }
+    main { padding: 20px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Fedha<span>Pro</span></div>
+  <div class="date-badge" id="dateDisplay"></div>
+</header>
+
+<!-- Hero with Background Image -->
+<div class="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div>
+      <div class="hero-title">Fedha<span>Pro</span></div>
+      <div class="hero-subtitle">Simamia fedha zako kwa urahisi na ufanisi</div>
+    </div>
+    <button class="change-bg-btn" onclick="document.getElementById('bgFileInput').click()">
+      🖼️ Badilisha Picha
+    </button>
+    <input type="file" id="bgFileInput" accept="image/*" onchange="changeBg(event)">
+  </div>
+</div>
+
+<main>
+  <!-- Summary -->
+  <div class="summary">
+    <div class="card balance">
+      <div class="card-label">Salio la Sasa</div>
+      <div class="card-currency">TZS</div>
+      <div class="card-amount" id="balanceEl">0</div>
+    </div>
+    <div class="card income">
+      <div class="card-label">Jumla ya Mapato</div>
+      <div class="card-currency">TZS</div>
+      <div class="card-amount" id="totalIncomeEl">0</div>
+    </div>
+    <div class="card expense">
+      <div class="card-label">Jumla ya Matumizi</div>
+      <div class="card-currency">TZS</div>
+      <div class="card-amount" id="totalExpenseEl">0</div>
+      <div class="progress-section">
+        <div class="progress-label">
+          <span>Asilimia ya Matumizi</span>
+          <span id="spendingPct">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="form-section">
+    <div class="section-title">Ingiza Rekodi Mpya</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>AINA</label>
+        <div class="type-toggle">
+          <button class="type-btn active-income" id="incomeBtn" onclick="setType('income')">📈 Mapato</button>
+          <button class="type-btn" id="expenseBtn" onclick="setType('expense')">📉 Matumizi</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>JUMLA (TZS)</label>
+        <input type="number" id="amountInput" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label>MAELEZO</label>
+        <input type="text" id="descInput" placeholder="mfano: Mshahara, Chakula...">
+      </div>
+      <div class="form-group">
+        <label>KATEGORIA</label>
+        <select id="categoryInput">
+          <option value="">-- Chagua --</option>
+          <optgroup label="Mapato">
+            <option value="Mshahara">💼 Mshahara</option>
+            <option value="Biashara">🏪 Biashara</option>
+            <option value="Faida">📊 Faida/Riba</option>
+            <option value="Zawadi">🎁 Zawadi</option>
+            <option value="Nyingine">📦 Nyingine</option>
+          </optgroup>
+          <optgroup label="Matumizi">
+            <option value="Chakula">🍽️ Chakula</option>
+            <option value="Usafiri">🚗 Usafiri</option>
+            <option value="Nyumba">🏠 Nyumba/Kodi</option>
+            <option value="Afya">🏥 Afya</option>
+            <option value="Elimu">📚 Elimu</option>
+            <option value="Mavazi">👗 Mavazi</option>
+            <option value="Burudani">🎭 Burudani</option>
+            <option value="Bili">💡 Bili/Huduma</option>
+            <option value="Nyingine">📦 Nyingine</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>TAREHE</label>
+        <input type="date" id="dateInput">
+      </div>
+    </div>
+    <button class="btn-add" onclick="addTransaction()">+ Ongeza Rekodi</button>
+  </div>
+
+  <!-- Transactions -->
+  <div class="transactions-section">
+    <div class="transactions-header">
+      <div class="section-title" style="margin:0; border:none;">Rekodi Zote</div>
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterTx('all', this)">Zote</button>
+        <button class="filter-tab" onclick="filterTx('income', this)">Mapato</button>
+        <button class="filter-tab" onclick="filterTx('expense', this)">Matumizi</button>
+      </div>
+    </div>
+    <div class="transaction-list" id="txList"></div>
+  </div>
+</main>
+
+<script>
+  let transactions = JSON.parse(localStorage.getItem('fedha_tx') || '[]');
+  let currentType = 'income';
+  let currentFilter = 'all';
+
+  // Set today's date
+  const today = new Date();
+  document.getElementById('dateInput').value = today.toISOString().split('T')[0];
+  document.getElementById('dateDisplay').textContent = today.toLocaleDateString('sw-TZ', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+
+  function setType(type) {
+    currentType = type;
+    document.getElementById('incomeBtn').className = 'type-btn ' + (type === 'income' ? 'active-income' : '');
+    document.getElementById('expenseBtn').className = 'type-btn ' + (type === 'expense' ? 'active-expense' : '');
+  }
+
+  function fmt(n) {
+    return Number(n).toLocaleString('sw-TZ');
+  }
+
+  function updateSummary() {
+    const income = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+    const expense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+    const balance = income - expense;
+    const pct = income > 0 ? Math.min(Math.round((expense / income) * 100), 100) : 0;
+
+    document.getElementById('balanceEl').textContent = fmt(balance);
+    document.getElementById('totalIncomeEl').textContent = fmt(income);
+    document.getElementById('totalExpenseEl').textContent = fmt(expense);
+    document.getElementById('spendingPct').textContent = pct + '%';
+    document.getElementById('progressFill').style.width = pct + '%';
+  }
+
+  function renderList() {
+    const list = document.getElementById('txList');
+    const filtered = currentFilter === 'all' ? transactions : transactions.filter(t => t.type === currentFilter);
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">💳</div>
+        <div class="empty-text">Hakuna rekodi bado. Ongeza rekodi yako ya kwanza!</div>
+      </div>`;
+      return;
+    }
+
+    const sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
+    list.innerHTML = sorted.map(t => `
+      <div class="transaction-item">
+        <div class="t-icon ${t.type}">${t.type === 'income' ? '📈' : '📉'}</div>
+        <div class="t-info">
+          <div class="t-name">${t.desc || t.category || 'Rekodi'}</div>
+          <div class="t-meta">${t.category} • ${new Date(t.date).toLocaleDateString('sw-TZ', {day:'numeric', month:'short', year:'numeric'})}</div>
+        </div>
+        <div class="t-amount ${t.type}">${t.type === 'income' ? '+' : '-'} TZS ${fmt(t.amount)}</div>
+        <button class="t-delete" onclick="deleteTransaction('${t.id}')" title="Futa">✕</button>
+      </div>
+    `).join('');
+  }
+
+  function addTransaction() {
+    const amount = parseFloat(document.getElementById('amountInput').value);
+    const desc = document.getElementById('descInput').value.trim();
+    const category = document.getElementById('categoryInput').value;
+    const date = document.getElementById('dateInput').value;
+
+    if (!amount || amount <= 0) { alert('Tafadhali ingiza kiasi sahihi!'); return; }
+    if (!date) { alert('Tafadhali chagua tarehe!'); return; }
+
+    const tx = {
+      id: Date.now().toString(),
+      type: currentType,
+      amount,
+      desc,
+      category: category || 'Nyingine',
+      date
+    };
+
+    transactions.unshift(tx);
+    localStorage.setItem('fedha_tx', JSON.stringify(transactions));
+
+    document.getElementById('amountInput').value = '';
+    document.getElementById('descInput').value = '';
+    document.getElementById('categoryInput').value = '';
+
+    updateSummary();
+    renderList();
+  }
+
+  function deleteTransaction(id) {
+    if (!confirm('Una uhakika unataka kufuta rekodi hii?')) return;
+    transactions = transactions.filter(t => t.id !== id);
+    localStorage.setItem('fedha_tx', JSON.stringify(transactions));
+    updateSummary();
+    renderList();
+  }
+
+  function filterTx(filter, el) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderList();
+  }
+
+  // Background image change
+  function changeBg(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById('heroBg').style.backgroundImage = `url('${e.target.result}')`;
+      localStorage.setItem('fedha_bg', e.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Restore saved background
+  const savedBg = localStorage.getItem('fedha_bg');
+  if (savedBg) {
+    document.getElementById('heroBg').style.backgroundImage = `url('${savedBg}')`;
+  }
+
+  // Init
+  updateSummary();
+  renderList();
+</script>
+</body>
+</html>
